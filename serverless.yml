@@ -45,7 +45,7 @@ provider:
 
 functions:
   slack:
-    handler: src/index.handler
+    handler: handler.slackListener
     events:
       ## Slash Commands, Events, and Interactive Messages
       - http:
@@ -54,7 +54,6 @@ functions:
           integration: lambda
           response:
             template: $input.path('$')
-
       ## OAuth Routes
       - http:
           path: ${self:custom.slack_path}
