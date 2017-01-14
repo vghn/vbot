@@ -8,21 +8,19 @@ custom:
   # The path used to install the Slack App
   slack_path: slack
   # The path to redirect to after an install
-  slack_install_redirect: https://slack.com
+  slack_install_redirect: 'https://slack.com'
+  # Client ID
+  slack_client_id: ${env:SLACK_CLIENT_ID}
+  # Client Secret
+  slack_client_secret: ${env:SLACK_CLIENT_SECRET}
   # Verification token
-  slack_verification_token: ${file(./secure.yml):service.vbot.slack_verification_token}
+  slack_verification_token: ${env:SLACK_VERIFICATION_TOKEN}
   # Space delimited scopes
   slack_client_scopes: 'bot commands incoming-webhook'
-  # Client ID
-  slack_client_id: ${file(./secure.yml):service.vbot.slack_client_id}
-  # Client Secret
-  slack_client_secret: ${file(./secure.yml):service.vbot.slack_client_secret}
 
 provider:
   name: aws
   runtime: nodejs4.3
-  memorySize: 128
-  profile: default
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
