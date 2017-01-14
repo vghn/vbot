@@ -6,24 +6,6 @@ const slack = require('serverless-slack');
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
-// Get SSH Key
-getSSHKey(){
-  // const s3Bucket = this.serverless.variables.service.custom.s3Bucket;
-  // const sshKey = this.serverless.variables.service.custom.sshKey;
-  const s3Bucket = 'vladgh';
-  const sshKey = 'secure/production/keys/deploy';
-
-  var params = {
-    Bucket: s3Bucket,
-    Key: sshKey
-  };
-  s3.getObject(params, function(err, data) {
-    if (err) console.log(err, err.stack); // an error occurred
-    else     console.log(data);           // successful response
-  });
-  return data;
-}
-
 // The function that AWS Lambda will call
 exports.slackListener = slack.handler.bind(slack);
 
@@ -55,6 +37,19 @@ slack.on('/vbot', (msg, bot) => {
       ]
     }]
   };
+  // const s3Bucket = this.serverless.variables.service.custom.s3Bucket;
+  // const sshKey = this.serverless.variables.service.custom.sshKey;
+  const s3Bucket = 'vladgh';
+  const sshKey = 'secure/production/keys/deploy';
+
+  var params = {
+    Bucket: s3Bucket,
+    Key: sshKey
+  };
+  let getSSHKey = s3.getObject(params, function(err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else     console.log(data);           // successful response
+  });
 
   switch (msg.text) {
     case 'hi':
