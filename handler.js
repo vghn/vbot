@@ -6,7 +6,7 @@ const slack = require('serverless-slack');
 // The function that AWS Lambda will call
 exports.slackListener = slack.handler.bind(slack);
 
-var usage = {
+const usage = {
   "attachments": [{
     "title": "USAGE:",
     "title_link": "https://github.com/vghn/vbot/blob/master/README.md",
@@ -19,7 +19,7 @@ var usage = {
   }]
 }
 
-var greetMessage = {
+const greetMessage = {
   "text": "Hello " + msg.user_name + "! How would you like to greet the channel?",
   "attachments": [{
     "fallback": "actions",
