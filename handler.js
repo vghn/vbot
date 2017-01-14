@@ -8,7 +8,7 @@ exports.slackListener = slack.handler.bind(slack);
 
 // Slash Command handler (https://api.slack.com/slash-commands)
 slack.on('/vbot', (msg, bot) => {
-  let usage = {
+  bot.replyPrivate({
     "attachments": [{
       "title": "USAGE:",
       "title_link": "https://github.com/vghn/vbot/blob/master/README.md",
@@ -19,9 +19,12 @@ slack.on('/vbot', (msg, bot) => {
         "short": false
       }]
     }]
-  };
+  });
+});
 
-  let message = {
+// Interactive Message handler
+slack.on('/vbot hi', (msg, bot) => {
+  bot.reply({
     "text": "Hello " + msg.user_name + "! How would you like to greet the channel?",
     "attachments": [{
       "fallback": "actions",
@@ -33,15 +36,7 @@ slack.on('/vbot', (msg, bot) => {
         { "type": "button", "name": "Hiya", "text": "Hiya", "value": "Hiya" }
       ]
     }]
-  };
-
-  switch (msg.text) {
-    case 'hi':
-      bot.replyPrivate(message);
-      break;
-    default:
-      bot.replyPrivate(usage);
-  }
+  });
 });
 
 // Interactive Message handler
@@ -58,7 +53,7 @@ slack.on('reaction_added', (msg, bot) => {
   });
 });
 
-// Interactive Message handler
+// Testing
 slack.on('/vbot test', (msg, bot) => {
   bot.reply({
     "text": "Just playing!"
