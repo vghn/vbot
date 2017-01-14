@@ -8,6 +8,9 @@ branches:
 env:
   global:
   - SLS_DEBUG=true
+cache:
+  directories:
+  - node_modules
 install: npm install serverless -g
 script: bin/deploy.sh
 notifications:
