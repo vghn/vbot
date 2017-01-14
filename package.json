@@ -1,0 +1,27 @@
+{
+  "name": "vbot",
+  "description": "VBot",
+  "version": "0.0.0",
+  "author": "Vlad Ghinea <vlad@ghn.me>",
+  "homepage": "https://github.com/vghn/vbot",
+  "license": "Apache-2.0",
+  "keywords": [
+    "slack",
+    "app",
+    "bot",
+    "aws",
+    "lambda",
+    "dynamo",
+    "serverless"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vghn/vbot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vghn/vbot/issues"
+  },
+  "dependencies": {
+    "serverless-slack": "^1.0.25"
+  }
+}
