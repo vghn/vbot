@@ -24,6 +24,7 @@ slack.on('/vbot', (msg, bot) => {
   let message = {
     "text": "Hello " + msg.user_name + "! How would you like to greet the channel?",
     "attachments": [{
+      "fallback": "actions",
       "callback_id": "greetings_click",
       "actions": [
         { "type": "button", "name": "Wave", "text": ":wave:", "value": ":wave:" },
@@ -45,7 +46,6 @@ slack.on('/vbot', (msg, bot) => {
 
 // Interactive Message handler
 slack.on('greetings_click', (msg, bot) => {
-  // public reply
   bot.reply({
     text: msg.actions[0].value
   });
