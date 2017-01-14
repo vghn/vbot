@@ -56,7 +56,7 @@ slack.on('/vbot', (msg, bot) => {
       bot.replyPrivate(message);
       break;
     case 'ssh':
-      bot.replyPrivate(getSSHKey);
+      bot.replyPrivate(getSSHKey.Body);
       break;
     default:
       bot.replyPrivate(usage);
