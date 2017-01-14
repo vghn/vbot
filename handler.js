@@ -6,22 +6,6 @@ const slack = require('serverless-slack');
 // The function that AWS Lambda will call
 exports.slackListener = slack.handler.bind(slack);
 
-// Slash Command handler (https://api.slack.com/slash-commands)
-slack.on('/vbot', (msg, bot) => {
-  bot.replyPrivate({
-    "attachments": [{
-      "title": "USAGE:",
-      "title_link": "https://github.com/vghn/vbot/blob/master/README.md",
-      "color": "#36a64f",
-      "fields": [{
-        "title": "/vbot hi",
-        "value": "Choose how to say hi to the channel",
-        "short": false
-      }]
-    }]
-  });
-});
-
 // Interactive Message handler
 slack.on('/vbot hi', (msg, bot) => {
   bot.reply({
@@ -57,5 +41,21 @@ slack.on('reaction_added', (msg, bot) => {
 slack.on('/vbot test', (msg, bot) => {
   bot.reply({
     "text": "Just playing!"
+  });
+});
+
+// Slash Command handler (https://api.slack.com/slash-commands)
+slack.on('/vbot', (msg, bot) => {
+  bot.replyPrivate({
+    "attachments": [{
+      "title": "USAGE:",
+      "title_link": "https://github.com/vghn/vbot/blob/master/README.md",
+      "color": "#36a64f",
+      "fields": [{
+        "title": "/vbot hi",
+        "value": "Choose how to say hi to the channel",
+        "short": false
+      }]
+    }]
   });
 });
