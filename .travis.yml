@@ -1,10 +1,14 @@
+dist: trusty
 language: node_js
 node_js:
 - '4.3'
+branches:
+  except:
+  - "/^v\\d/"
 env:
   global:
   - SLS_DEBUG=true
-before_install: npm install serverless -g
+install: npm install serverless -g
 script: bin/deploy.sh
 notifications:
   slack:
