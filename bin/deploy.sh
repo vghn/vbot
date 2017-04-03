@@ -4,6 +4,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# DEBUG
+[ -z "${DEBUG:-}" ] || set -x
+
+# Get Git branch
 GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
 
 echo 'Detect stage'
