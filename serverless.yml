@@ -4,7 +4,7 @@ custom:
   # Log all events to CloudWatch
   slack_enable_logging: true
   # The dynamodb table to store OAuth access data
-  slack_table_name: VBotTeams
+  slack_table_name: VBotTeams-${opt:stage}
   # The path used to install the Slack App
   slack_path: slack
   # The path to redirect to after an install
@@ -80,6 +80,7 @@ resources:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
+        TableName: ${self:custom.slack_table_name}
         AttributeDefinitions:
           -
             AttributeName: id
@@ -91,4 +92,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:custom.slack_table_name}
