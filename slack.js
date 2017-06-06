@@ -4,7 +4,7 @@
 const slack = require('serverless-slack');
 
 // The function that AWS Lambda will call
-exports.slackListener = slack.handler.bind(slack);
+exports.listener = slack.handler.bind(slack);
 
 // Slash Command handler (https://api.slack.com/slash-commands)
 slack.on('/vbot', (msg, bot) => {
