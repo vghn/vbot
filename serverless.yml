@@ -24,7 +24,13 @@ provider:
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
-    - Effect: Allow
+    - Sid: AllowS3
+      Effect: Allow
+      Action:
+        - s3:GetObject
+      Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucket, '*']]
+    - Sid: AllowDB
+      Effect: Allow
       Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
