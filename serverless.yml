@@ -24,13 +24,11 @@ provider:
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
-    - Sid: AllowS3
-      Effect: Allow
+    - Effect: Allow
       Action:
         - s3:GetObject
-      Resource: !Join ['', ['arn:aws:s3:::', !Ref SecretsBucket, '*']]
-    - Sid: AllowDB
-      Effect: Allow
+      Resource: "*"
+    - Effect: Allow
       Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
@@ -39,7 +37,7 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+      Resource: "*"
   environment:
     TABLE_NAME: ${self:custom.slack_table_name}
     CLIENT_ID: ${self:custom.slack_client_id}

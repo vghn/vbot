@@ -10,6 +10,10 @@ IFS=$'\n\t'
 # Get Git branch
 GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
 
+# Load private environment
+# shellcheck disable=1090
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/../.env" 2>/dev/null || true
+
 echo 'Detect stage'
 if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
   if [[ "$GIT_BRANCH" == 'master' ]]; then
