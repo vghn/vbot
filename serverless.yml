@@ -76,8 +76,13 @@ functions:
 
 resources:
   Resources:
+    SecretsBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Retain
+      Properties:
+        AccessControl: Private
     TeamsDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
+      Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
         TableName: ${self:custom.slack_table_name}
