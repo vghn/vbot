@@ -27,7 +27,7 @@ provider:
     - Effect: Allow
       Action:
         - s3:GetObject
-      Resource: "*"
+      Resource: { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "SecretsBucket" }, "/*" ] ] }
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
@@ -37,7 +37,7 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "*"
+      Resource: { "Fn::Join": [ "", [ "arn:aws:dynamodb:*:*:table/", { "Ref": "TeamsDynamoDbTable" } ] ] }
   environment:
     TABLE_NAME: ${self:custom.slack_table_name}
     CLIENT_ID: ${self:custom.slack_client_id}
