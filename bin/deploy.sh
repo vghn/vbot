@@ -11,6 +11,15 @@ IFS=$'\n\t'
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/.."
 GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
 
+# Load private environment
+if [[ -s "${APPDIR}/.env" ]]; then
+  # shellcheck disable=1090
+  . "${APPDIR}/.env" 2>/dev/null || true
+elif [[ -s "${APPDIR}/.env.gpg" ]]; then
+  # shellcheck disable=1090
+  . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
+fi
+
 # Detect stage
 if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
   if [[ "$GIT_BRANCH" == 'master' ]]; then
@@ -20,21 +29,10 @@ if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
   fi
 fi
 
-if [ -z ${STAGE+x} ]; then
+# Deploy
+if [[ -z ${STAGE+x} ]]; then
   echo "Not deploying changes from ${GIT_BRANCH} (only master/dev)"
 else
-  # Decrypt .env file
-  if [[ ! -s "${APPDIR}/.env" ]]; then
-    ( echo "$ENCRYPT_KEY" | base64 --decode ) | \
-      gpg --decrypt --passphrase-fd 0 --batch --output "${APPDIR}/.env" \
-      "${APPDIR}/.env.gpg"
-  fi
-
-  # Load environment
-  # shellcheck disable=1090
-  . "${APPDIR}/.env" 2>/dev/null || true
-
-  # Deploy
   echo "Deploying stage from branch '${GIT_BRANCH}' to '${STAGE}'"
   npm install -g
   serverless deploy --stage "$STAGE"
