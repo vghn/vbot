@@ -1,4 +1,5 @@
 dist: trusty
+group: travis_latest
 language: node_js
 node_js:
 - '6'
