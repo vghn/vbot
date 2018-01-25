@@ -4,7 +4,6 @@
 # Serverless
 .serverless
 .requirements.zip
-package-lock.json
 node_modules/
 
 # Distribution / packaging
