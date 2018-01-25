@@ -14,7 +14,7 @@ cache:
   - node_modules
 install:
 - npm install serverless -g
-- sls plugin install -n serverless-python-requirements
+- npm install serverless-python-requirements
 script: bin/deploy.sh
 notifications:
   webhooks:
