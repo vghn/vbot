@@ -80,7 +80,7 @@ def slack(event, context):
     if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
         return
 
-    process_slack(parse_qs(event['body']))
+    return respond(None, process_slack(parse_qs(event['body'])))
 
 
 def travis(event, context):
@@ -93,7 +93,7 @@ def travis(event, context):
     if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
         return
 
-    process_travis(event)
+    return process_travis(event)
 
 
 def process_slack(params):
@@ -101,7 +101,7 @@ def process_slack(params):
 
     if token != get_secret('/vbot/SlackVerificationToken'):
         logger.error("Request token (%s) does not match expected", token)
-        return respond(None, {'text': 'Invalid request token :cry:'})
+        return {'text': 'Invalid request token :cry:'}
 
     user = params['user_id'][0]
     command = params['command'][0]
@@ -119,7 +119,7 @@ def process_slack(params):
         """
         if user not in [allowed.strip() for allowed in users.split(',')]:
             logger.warn('Unauthorized user <@%s> tried to run command "%s" on channel #%s with the following text "%s"', user, command, channel, command_text)
-            return respond(None, {'text': 'You are not on the allowed user list :cry:'})
+            return {'text': 'You are not on the allowed user list :cry:'}
         else:
             logger.info('Authorized user <@%s> invoked command "%s" on channel #%s with the following text "%s"', user, command, channel, command_text)
 
@@ -128,9 +128,9 @@ def process_slack(params):
             # Only allow Vlad (U0474LR06)
             verify_allowed('U0474LR06')
             deploy_r10k()
-            return respond(None, {'text': 'R10K deploying in the background :thumbsup:'})
+            return {'text': 'R10K deploying in the background :thumbsup:'}
         elif command_text == 'help':
-            return respond(None, {
+            return {
                 'text': '*USAGE*',
                 'attachments': [
                     {
@@ -142,15 +142,15 @@ def process_slack(params):
                         'text': 'Deploys Puppet Master changes via SSH'
                     }
                 ]
-            })
+            }
         else:
             logger.warn('Unknown action')
-            return respond(None, {'text': 'Unknown action "%s" :cry:; try "/vbot help"' % (command_text)})
+            return {'text': 'Unknown action "%s" :cry:; try "/vbot help"' % (command_text)}
     else:
         logger.warn('Unknown command')
-        return respond(None, {'text': 'Unknown command "%s" :cry:' % (command)})
+        return {'text': 'Unknown command "%s" :cry:' % (command)}
 
-    return respond(None, {'text': 'Event ignored :cry:'})
+    return {'text': 'Event ignored :cry:'}
 
 
 def post_to_slack(hook_url, slack_message):
@@ -197,6 +197,8 @@ def process_travis(request):
         deploy_r10k()
     else:
         logger.warn('Event ignored')
+
+    return respond(None, {'status': 'OK'})
 
 
 def check_travis_authorized(signature, public_key, payload):
