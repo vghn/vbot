@@ -80,7 +80,23 @@ def slack(event, context):
     if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
         return
 
-    params = parse_qs(event['body'])
+    process_slack(parse_qs(event['body']))
+
+
+def travis(event, context):
+    """
+    TravisCI Requests
+    Thanks to https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4
+    """
+
+    # Skip scheduled events (they are just warming up the fucntion)
+    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
+        return
+
+    process_travis(event)
+
+
+def process_slack(params):
     token = params['token'][0]
 
     if token != get_secret('/vbot/SlackVerificationToken'):
@@ -152,18 +168,9 @@ def post_to_slack(hook_url, slack_message):
         logger.error("Server connection failed: %s", e.reason)
 
 
-def travis(event, context):
-    """
-    TravisCI Requests
-    Thanks to https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4
-    """
-
-    # Skip scheduled events (they are just warming up the fucntion)
-    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
-        return
-
-    signature = get_travis_signature(event)
-    json_payload = parse_qs(event['body'])['payload'][0]
+def process_travis(request):
+    signature = get_travis_signature(request)
+    json_payload = parse_qs(request['body'])['payload'][0]
 
     try:
         public_key = get_travis_public_key()
