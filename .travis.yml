@@ -12,7 +12,9 @@ env:
 cache:
   directories:
   - node_modules
-install: npm install serverless -g
+install:
+- npm install serverless -g
+- sls plugin install -n serverless-python-requirements
 script: bin/deploy.sh
 notifications:
   webhooks:
