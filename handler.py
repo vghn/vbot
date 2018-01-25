@@ -11,7 +11,7 @@ from urllib.parse import parse_qs
 
 # Requirements
 try:
-    import unzip_requirements
+    import unzip_requirements # NOQA
 except ImportError:
     pass
 
@@ -90,7 +90,7 @@ def slack(event, context):
     user = params['user_id'][0]
     command = params['command'][0]
     channel = params['channel_name'][0]
-    response_url = params['response_url'][0]
+    response_url = params['response_url'][0] # NOQA
 
     if 'text' in params:
         command_text = params['text'][0]
@@ -232,7 +232,7 @@ def deploy_r10k():
         os.environ['SECRETS_BUCKET'],
         'deploy.rsa',
         '/tmp/deploy.rsa'
-        )
+    )
 
     # Establish SSH connection
     key = paramiko.RSAKey.from_private_key_file('/tmp/deploy.rsa')
@@ -244,7 +244,7 @@ def deploy_r10k():
     # Run SSH commands
     ssh_commands = [
         'docker exec $(docker ps --quiet --latest --filter "label=r10k") r10k deploy environment --puppetfile'
-        ]
+    ]
     for ssh_command in ssh_commands:
         logger.info("Execute '{}' in the background".format(ssh_command + ' >/dev/null 2>&1 &'))
         stdin, stdout, stderr = ssh.exec_command(ssh_command)
