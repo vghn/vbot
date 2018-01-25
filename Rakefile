@@ -15,7 +15,7 @@ Vtasks::TravisCI.new
 # Update NPM version before release
 ['major', 'minor', 'patch'].each do |level|
   task "before:#{level}".to_sym do
-    sh "npm version #{level} -m 'Upgrade to %s'"
+    sh "npm version #{level} -m 'Upgrade to v%s'"
   end
   task "release:#{level}" => "before:#{level}"
 end
