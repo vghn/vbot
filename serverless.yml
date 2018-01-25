@@ -3,6 +3,8 @@ service: vbot
 custom:
   # Secrets Bucket Name
   secrets_bucket: ${self:service}-${opt:stage}-secrets
+  # Domain Name
+  domain_name: ghn.me
   # serverless-python-requirements plugin
   pythonRequirements:
     dockerizePip: true
@@ -70,6 +72,30 @@ resources:
       Properties:
         BucketName: ${self:custom.secrets_bucket}
         AccessControl: Private
+    Certificate:
+      Type: AWS::CertificateManager::Certificate
+      Properties:
+        DomainName: ${self:service}.${self:custom.domain_name}
+        DomainValidationOptions:
+          - DomainName: ${self:service}.${self:custom.domain_name}
+            ValidationDomain: ${self:custom.domain_name}
+        Tags:
+          - Key: Name
+            Value: ${self:service}
+    DomainName:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        CertificateArn:
+          Ref: Certificate
+        DomainName: ${self:service}.${self:custom.domain_name}
+    BasePathMapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName:
+          Ref: DomainName
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Stage: ${opt:stage}
 
 plugins:
   - serverless-python-requirements
