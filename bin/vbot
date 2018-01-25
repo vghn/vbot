@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+# Bash strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# DEBUG
+[ -z "${DEBUG:-}" ] || set -x
+
+# VARs
+APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/.."
+GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
+
+# Load private environment
+load_env(){
+  if [[ -s "${APPDIR}/.env" ]]; then
+    # shellcheck disable=1090
+    . "${APPDIR}/.env" 2>/dev/null || true
+  elif [[ -s "${APPDIR}/.env.gpg" ]]; then
+    # shellcheck disable=1090
+    . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
+  fi
+}
+
+# Detect stage
+detect_stage(){
+  if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
+    if [[ "$GIT_BRANCH" == 'master' ]]; then
+      export STAGE='prod'
+    elif [[ "$GIT_BRANCH" == 'dev' ]]; then
+      export STAGE='dev'
+    fi
+  fi
+}
+
+# Deploy
+deploy_vbot(){
+  local func="${1:-}"
+  if [[ -z ${STAGE+x} ]]; then
+    echo "Not deploying changes from ${GIT_BRANCH} (only master/dev)"
+  else
+    echo "Deploying stage from branch '${GIT_BRANCH}' to '${STAGE}'"
+    npm install -g
+    if [[ -n "$func" ]]; then
+      serverless deploy function --stage "$STAGE" --function "$func"
+    else
+      serverless deploy --stage "$STAGE"
+    fi
+  fi
+}
+
+# Logs
+vbot_logs(){
+  local func="${1:-}"
+  serverless logs --stage "$STAGE" --function "$func" --tail
+}
+
+# Process VBot CLI
+vbot_process_cli(){
+  export cmd="${1:-}"; shift || true
+  export scmd="${1:-}"; shift || true
+
+  load_env
+  detect_stage
+
+  case "$cmd" in
+    deploy)
+      deploy_vbot "$scmd"
+      ;;
+    logs)
+      vbot_logs "$scmd"
+      ;;
+  esac
+}
+
+vbot_process_cli "${@:-}"

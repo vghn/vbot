@@ -20,7 +20,7 @@ before_install:
 install:
 - npm install serverless -g
 - npm install serverless-python-requirements
-script: bin/deploy.sh
+script: bin/vbit deploy
 notifications:
   webhooks:
     urls: https://vbot.ghn.me/travis
