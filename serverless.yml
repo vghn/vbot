@@ -1,103 +1,71 @@
 service: vbot
 
 custom:
-  # Log all events to CloudWatch
-  slack_enable_logging: true
-  # The dynamodb table to store OAuth access data
-  slack_table_name: VBotTeams-${opt:stage}
-  # The path used to install the Slack App
-  slack_path: slack
-  # The path to redirect to after an install
-  slack_install_redirect: 'https://slack.com'
-  # Client ID
-  slack_client_id: ${env:SLACK_CLIENT_ID}
-  # Client Secret
-  slack_client_secret: ${env:SLACK_CLIENT_SECRET}
-  # Verification token
-  slack_verification_token: ${env:SLACK_VERIFICATION_TOKEN}
-  # Space delimited scopes
-  slack_client_scopes: 'bot commands incoming-webhook'
+  # Secrets Bucket Name
+  secrets_bucket: ${self:service}-${opt:stage}-secrets
+  # serverless-python-requirements plugin
+  pythonRequirements:
+    dockerizePip: true
+    zip: true
+
+package:
+  individually: false
+  exclude:
+    - '**/*'
+  include:
+    - handler.py
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: python3.6
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
     - Effect: Allow
       Action:
         - s3:GetObject
-      Resource: { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "SecretsBucket" }, "/*" ] ] }
+      Resource: arn:aws:s3:::${self:custom.secrets_bucket}/*
     - Effect: Allow
       Action:
-        - dynamodb:DescribeTable
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource: { "Fn::Join": [ "", [ "arn:aws:dynamodb:*:*:table/", { "Ref": "TeamsDynamoDbTable" } ] ] }
+        - ssm:GetParameter
+        - ssm:GetParameters
+      Resource: arn:aws:ssm:*:*:parameter/${self:service}/*
   environment:
-    TABLE_NAME: ${self:custom.slack_table_name}
-    CLIENT_ID: ${self:custom.slack_client_id}
-    CLIENT_SECRET: ${self:custom.slack_client_secret}
-    CLIENT_SCOPES: ${self:custom.slack_client_scopes}
-    INSTALL_REDIRECT: ${self:custom.slack_install_redirect}
-    VERIFICATION_TOKEN: ${self:custom.slack_verification_token}
-    ENABLE_LOGGING: ${self:custom.slack_enable_logging}
+    SERVICE_NAME: ${self:service}
+    SECRETS_BUCKET: ${self:custom.secrets_bucket}
 
 functions:
   slack:
-    handler: slack.listener
+    handler: handler.slack
     events:
-      ## Slash Commands, Events, and Interactive Messages
       - http:
-          path: ${self:custom.slack_path}
+          path: slack
           method: post
-          integration: lambda
-          response:
-            template: $input.path('$')
-      ## OAuth Routes
+  travis:
+    handler: handler.travis
+    events:
       - http:
-          path: ${self:custom.slack_path}
+          path: travis
+          method: post
+  api:
+    handler: handler.api
+    events:
+      - http:
+          path: api
           method: get
-          integration: lambda
-          request:
-            parameters:
-              querystrings:
-                code: true
-                state: true
-          response:
-            statusCodes:
-              201:
-                pattern: ''
-              301:
-                pattern: http.*
-                headers:
-                  Location: integration.response.body.errorMessage
-                  Cache-Control: "'no-cache, no-store, must-revalidate'"
+  cron:
+    handler: handler.run
+    events:
+      - schedule: rate(1 day)
 
 resources:
   Resources:
-    SecretsBucket:
+    Secrets:
       Type: AWS::S3::Bucket
       DeletionPolicy: Retain
       Properties:
+        BucketName: ${self:custom.secrets_bucket}
         AccessControl: Private
-    TeamsDynamoDbTable:
-      Type: AWS::DynamoDB::Table
-      DeletionPolicy: Retain
-      Properties:
-        TableName: ${self:custom.slack_table_name}
-        AttributeDefinitions:
-          -
-            AttributeName: id
-            AttributeType: S
-        KeySchema:
-          -
-            AttributeName: id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+
+plugins:
+  - serverless-python-requirements
