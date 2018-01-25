@@ -113,9 +113,23 @@ def slack(event, context):
             verify_allowed('U0474LR06')
             deploy_r10k()
             return respond(None, {'text': 'R10K deploying in the background :thumbsup:'})
+        elif command_text == 'help':
+            return respond(None, {
+                'text': '*USAGE*',
+                'attachments': [
+                    {
+                        'title': 'help',
+                        'text': 'Shows this'
+                    },
+                    {
+                        'title': 'deploy r10k',
+                        'text': 'Deploys Puppet Master changes via SSH'
+                    }
+                ]
+            })
         else:
-            logger.warn('Unknown Subcommand')
-            return respond(None, {'text': 'Unknown Subcommand "%s" :cry:' % (command_text)})
+            logger.warn('Unknown action')
+            return respond(None, {'text': 'Unknown action "%s" :cry:; try "/vbot help"' % (command_text)})
     else:
         logger.warn('Unknown command')
         return respond(None, {'text': 'Unknown command "%s" :cry:' % (command)})
