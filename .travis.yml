@@ -1,6 +1,7 @@
 dist: trusty
 group: travis_latest
 language: node_js
+services: docker
 node_js:
 - '6'
 branches:
@@ -12,6 +13,10 @@ env:
 cache:
   directories:
   - node_modules
+before_install:
+- sudo apt-get -qy update && sudo apt-get -qy -o Dpkg::Options::="--force-confdef"
+  -o Dpkg::Options::="--force-confold" install docker-ce
+- docker --version
 install:
 - npm install serverless -g
 - npm install serverless-python-requirements
