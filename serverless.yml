@@ -18,6 +18,7 @@ package:
 provider:
   name: aws
   runtime: python3.6
+  memorySize: 128
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
@@ -38,18 +39,21 @@ functions:
   slack:
     handler: handler.slack
     events:
+      - schedule: rate(1 minute)
       - http:
           path: slack
           method: post
   travis:
     handler: handler.travis
     events:
+      - schedule: rate(1 minute)
       - http:
           path: travis
           method: post
   api:
     handler: handler.api
     events:
+      - schedule: rate(1 minute)
       - http:
           path: api
           method: get

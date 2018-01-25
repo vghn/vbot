@@ -50,15 +50,23 @@ def respond(err, res=None):
 
 
 def run(event, context):
+    """
+    VBot Cron Jobs
+    """
+
     current_time = datetime.datetime.now().time()
     name = context.function_name
     logger.info('Your function %s ran at %s', name, str(current_time))
 
 
 def api(event, context):
-    current_time = datetime.datetime.now().time()
-    name = context.function_name
-    logger.info('Your function %s ran at %s', name, str(current_time))
+    """
+    VBot API
+    """
+
+    # Skip scheduled events (they are just warming up the fucntion)
+    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
+        return
 
     return respond(None, {'status': 'OK'})
 
@@ -68,9 +76,9 @@ def slack(event, context):
     Slack Slash Commands
     """
 
-    current_time = datetime.datetime.now().time()
-    name = context.function_name
-    logger.info('Your function %s ran at %s', name, str(current_time))
+    # Skip scheduled events (they are just warming up the fucntion)
+    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
+        return
 
     params = parse_qs(event['body'])
     token = params['token'][0]
@@ -135,6 +143,11 @@ def travis(event, context):
     TravisCI Requests
     Thanks to https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4
     """
+
+    # Skip scheduled events (they are just warming up the fucntion)
+    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
+        return
+
     signature = get_travis_signature(event)
     json_payload = parse_qs(event['body'])['payload'][0]
 
