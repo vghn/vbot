@@ -7,7 +7,9 @@ This project is still in a prototype development stage.
 ## Overview
 VBot Slack App
 
-Based on https://github.com/johnagan/serverless-slack-app
+Initially a NodeJS app based on https://github.com/johnagan/serverless-slack-app
+
+Refactored later in Python on AWS Lambda with AWS API Gateway based on https://medium.com/devoops-and-universe/serverless-slack-bot-on-aws-vs-azure-getting-notified-instantly-ab0916393e1d for some of the Slack code and https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4 for the Travis webhook
 
 ## Commands
 
