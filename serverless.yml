@@ -14,7 +14,7 @@ custom:
   # serverless-prune-plugin (prune old deployments)
   prune:
     automatic: true
-    number: 3
+    number: 10
 
 package:
   individually: false
@@ -105,3 +105,4 @@ resources:
 
 plugins:
   - serverless-python-requirements
+  - serverless-prune-plugin
