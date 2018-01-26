@@ -1,7 +1,7 @@
 {
   "name": "vbot",
   "description": "VBot",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "Vlad Ghinea <vlad@ghn.me>",
   "homepage": "https://github.com/vghn/vbot",
   "license": "Apache-2.0",
