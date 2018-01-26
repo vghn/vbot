@@ -47,28 +47,28 @@ functions:
   slack:
     handler: handler.slack
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(15 minutes)
       - http:
           path: slack
           method: post
   travis:
     handler: handler.travis
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(15 minutes)
       - http:
           path: travis
           method: post
   api:
     handler: handler.api
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(15 minutes)
       - http:
           path: api
           method: get
   cron:
     handler: handler.run
     events:
-      - schedule: rate(1 day)
+      - schedule: rate(15 minutes)
 
 resources:
   Resources:
