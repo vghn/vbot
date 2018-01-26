@@ -1,5 +1,15 @@
 # Change Log
 
+## [v0.1.1](https://github.com/vghn/vbot/tree/v0.1.1) (2018-01-25)
+[Full Changelog](https://github.com/vghn/vbot/compare/v0.1.0...v0.1.1)
+
+**Implemented enhancements:**
+
+- Update README [\#15](https://github.com/vghn/vbot/issues/15)
+
+## [v0.1.0](https://github.com/vghn/vbot/tree/v0.1.0) (2018-01-26)
+[Full Changelog](https://github.com/vghn/vbot/compare/v0.0.0...v0.1.0)
+
 ## [v0.0.0](https://github.com/vghn/vbot/tree/v0.0.0) (2018-01-26)
 **Implemented enhancements:**
 
