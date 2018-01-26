@@ -26,9 +26,9 @@ load_env(){
 detect_stage(){
   if [[ "${TRAVIS_PULL_REQUEST:-false}" == 'false' ]]; then
     if [[ "$GIT_BRANCH" == 'master' ]]; then
-      export STAGE='prod'
+      export SLS_STAGE='prod'
     elif [[ "$GIT_BRANCH" == 'dev' ]]; then
-      export STAGE='dev'
+      export SLS_STAGE='dev'
     fi
   fi
 }
@@ -36,15 +36,15 @@ detect_stage(){
 # Deploy
 deploy_vbot(){
   local func="${1:-}"
-  if [[ -z ${STAGE+x} ]]; then
+  if [[ -z ${SLS_STAGE+x} ]]; then
     echo "Not deploying changes from ${GIT_BRANCH} (only master/dev)"
   else
-    echo "Deploying stage from branch '${GIT_BRANCH}' to '${STAGE}'"
-    npm install -g
+    echo "Deploying stage from branch '${GIT_BRANCH}' to '${SLS_STAGE}'"
+    npm install
     if [[ -n "$func" ]]; then
-      serverless deploy function --stage "$STAGE" --function "$func"
+      serverless deploy function --stage "$SLS_STAGE" --function "$func" --verbose
     else
-      serverless deploy --stage "$STAGE"
+      serverless deploy --stage "$SLS_STAGE" --verbose
     fi
   fi
 }
@@ -52,7 +52,7 @@ deploy_vbot(){
 # Logs
 vbot_logs(){
   local func="${1:-}"
-  serverless logs --stage "$STAGE" --function "$func" --tail
+  serverless logs --stage "$SLS_STAGE" --function "$func" --tail
 }
 
 # Process VBot CLI

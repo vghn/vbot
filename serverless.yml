@@ -1,14 +1,20 @@
 service: vbot
 
 custom:
+  # Stage
+  stage: ${opt:stage, env:SLS_STAGE, 'dev'}
   # Secrets Bucket Name
-  secrets_bucket: ${self:service}-${opt:stage}-secrets
+  secrets_bucket: ${self:service}-${self:custom.stage}-secrets
   # Domain Name
   domain_name: ghn.me
-  # serverless-python-requirements plugin
+  # serverless-python-requirements plugin (package dependencies)
   pythonRequirements:
     dockerizePip: true
     zip: true
+  # serverless-prune-plugin (prune old deployments)
+  prune:
+    automatic: true
+    number: 3
 
 package:
   individually: false
@@ -95,7 +101,7 @@ resources:
           Ref: DomainName
         RestApiId:
           Ref: ApiGatewayRestApi
-        Stage: ${opt:stage}
+        Stage: ${self:custom.stage}
 
 plugins:
   - serverless-python-requirements
