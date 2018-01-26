@@ -23,5 +23,8 @@
   },
   "dependencies": {
     "serverless-python-requirements": "^3.3.0"
+  },
+  "scripts": {
+    "postversion": "git add package.json package-lock.json && git commit --gpg-sign --message 'Upgrade version'"
   }
 }
