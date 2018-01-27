@@ -36,8 +36,7 @@ provider:
       Resource: arn:aws:s3:::${self:custom.secrets_bucket}/*
     - Effect: Allow
       Action:
-        - ssm:GetParameter
-        - ssm:GetParameters
+        - ssm:Get*
       Resource: arn:aws:ssm:*:*:parameter/${self:service}/*
   environment:
     SERVICE_NAME: ${self:service}
