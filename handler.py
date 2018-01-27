@@ -9,12 +9,13 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 from urllib.parse import parse_qs
 
-# Requirements
+# serverless-python-requirements plugin to install requirements
 try:
     import unzip_requirements # NOQA
 except ImportError:
     pass
 
+# Import requirements not present on AWS Lambda
 import paramiko
 from OpenSSL.crypto import verify, load_publickey, FILETYPE_PEM, X509
 from OpenSSL.crypto import Error as SignatureError
@@ -35,11 +36,17 @@ TRAVIS_CONFIG_URL = 'https://api.travis-ci.org/config'
 
 
 def get_secret(key):
-    resp = ssm.get_parameter(Name=key, WithDecryption=True)
-    return resp['Parameter']['Value']
+    """
+    Retrieve AWS SSM Parameter (decrypted if necessary)
+    """
+    response = ssm.get_parameter(Name=key, WithDecryption=True)
+    return response['Parameter']['Value']
 
 
 def respond(err, res=None):
+    """
+    Return an JSON formatted AWS API Gateway response
+    """
     return {
         'statusCode': '400' if err else '200',
         'body': err.args[0] if err else json.dumps(res),
@@ -73,7 +80,7 @@ def api(event, context):
 
 def slack(event, context):
     """
-    Slack Slash Commands
+    Slack Endpoint Processor
     """
 
     # Skip scheduled events (they are just warming up the fucntion)
@@ -85,8 +92,7 @@ def slack(event, context):
 
 def travis(event, context):
     """
-    TravisCI Requests
-    Thanks to https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4
+    TravisCI Endpoint
     """
 
     # Skip scheduled events (they are just warming up the fucntion)
@@ -97,6 +103,10 @@ def travis(event, context):
 
 
 def process_slack(params):
+    """
+    Slack Requests Processor
+    """
+
     token = params['token'][0]
 
     if token != get_secret('/vbot/SlackVerificationToken'):
@@ -169,6 +179,10 @@ def post_to_slack(hook_url, slack_message):
 
 
 def process_travis(request):
+    """
+    Process TravisCI Requests
+    Thanks to https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4
+    """
     signature = get_travis_signature(request)
     json_payload = parse_qs(request['body'])['payload'][0]
 
