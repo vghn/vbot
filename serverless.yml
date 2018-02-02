@@ -77,6 +77,35 @@ resources:
       Properties:
         BucketName: ${self:custom.secrets_bucket}
         AccessControl: Private
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
+    SecretsBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: Secrets
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: DenyUnEncryptedInflightOperations
+            Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource: arn:aws:s3:::${self:custom.secrets_bucket}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+          - Sid: DenyUnEncryptedObjectUploads
+            Effect: Deny
+            Principal: '*'
+            Action:
+            - s3:PutObject
+            Resource: arn:aws:s3:::${self:custom.secrets_bucket}/*
+            Condition:
+              StringNotEquals:
+                s3:x-amz-server-side-encryption: AES256
     Certificate:
       Type: AWS::CertificateManager::Certificate
       Properties:
