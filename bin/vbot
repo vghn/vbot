@@ -11,6 +11,23 @@ IFS=$'\n\t'
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/.."
 GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
 
+# Usage
+usage(){
+  echo '---------------------------------------------'
+  echo "USAGE: ${BASH_SOURCE[0]} [COMMAND] [SUBCOMMAND] [OPTIONS]"
+  echo '---------------------------------------------'
+  echo 'Commands:'
+  echo ''
+  echo '  - deploy [FUNCTION NAME]'
+  echo ''
+  echo '  - help'
+  echo ''
+  echo '----------------------------------------------'
+  echo 'For more information please consult the README'
+  echo '----------------------------------------------'
+  exit 1
+}
+
 # Load private environment
 load_env(){
   if [[ -s "${APPDIR}/.env" ]]; then
@@ -69,6 +86,12 @@ vbot_process_cli(){
       ;;
     logs)
       vbot_logs "$scmd"
+      ;;
+    help)
+      usage
+      ;;
+    *)
+      usage
       ;;
   esac
 }
