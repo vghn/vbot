@@ -200,14 +200,16 @@ def process_travis(request):
         return respond(Exception('Unauthorized'))
 
     json_data = json.loads(json_payload)
+
     build_number = json_data['number']
+    state = json_data['state']
     branch = json_data['branch']
     repo_name = json_data['repository']['name']
     owner_name = json_data['repository']['owner_name']
 
     logger.info('Authorized request received from TravisCI build #%s for the %s branch of repository %s/%s', build_number, branch, owner_name, repo_name)
 
-    if owner_name == 'vghn' and repo_name == 'puppet':
+    if owner_name == 'vghn' and repo_name == 'puppet' and state == 'passed':
         deploy_r10k()
     else:
         logger.warn('Event ignored')
