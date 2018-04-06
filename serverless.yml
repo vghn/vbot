@@ -1,6 +1,8 @@
 service: vbot
 
 custom:
+  # Service name
+  service: ${self:service}
   # Stage
   stage: ${opt:stage, env:SLS_STAGE, 'dev'}
   # Secrets Bucket Name
@@ -37,9 +39,9 @@ provider:
     - Effect: Allow
       Action:
         - ssm:Get*
-      Resource: arn:aws:ssm:*:*:parameter/${self:service}/*
+      Resource: arn:aws:ssm:*:*:parameter/${self:custom.service}/*
   environment:
-    SERVICE_NAME: ${self:service}
+    SERVICE_NAME: ${self:custom.service}
     SECRETS_BUCKET: ${self:custom.secrets_bucket}
 
 functions:
@@ -74,19 +76,19 @@ resources:
     Certificate:
       Type: AWS::CertificateManager::Certificate
       Properties:
-        DomainName: ${self:service}.${self:custom.domain_name}
+        DomainName: ${self:custom.service}.${self:custom.domain_name}
         DomainValidationOptions:
-          - DomainName: ${self:service}.${self:custom.domain_name}
+          - DomainName: ${self:custom.service}.${self:custom.domain_name}
             ValidationDomain: ${self:custom.domain_name}
         Tags:
           - Key: Name
-            Value: ${self:service}
+            Value: ${self:custom.service}
     DomainName:
       Type: AWS::ApiGateway::DomainName
       Properties:
         CertificateArn:
           Ref: Certificate
-        DomainName: ${self:service}.${self:custom.domain_name}
+        DomainName: ${self:custom.service}.${self:custom.domain_name}
     BasePathMapping:
       Type: AWS::ApiGateway::BasePathMapping
       Properties:
