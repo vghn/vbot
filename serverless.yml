@@ -72,9 +72,15 @@ functions:
       - schedule: rate(15 minutes)
 
 resources:
+  Conditions: 
+    CreateProdResources:
+      Fn::Equals:
+        - ${self:custom.stage}
+        - prod
   Resources:
     Certificate:
       Type: AWS::CertificateManager::Certificate
+      Condition: CreateProdResources
       Properties:
         DomainName: ${self:custom.service}.${self:custom.domain_name}
         DomainValidationOptions:
@@ -85,12 +91,14 @@ resources:
             Value: ${self:custom.service}
     DomainName:
       Type: AWS::ApiGateway::DomainName
+      Condition: CreateProdResources
       Properties:
         CertificateArn:
           Ref: Certificate
         DomainName: ${self:custom.service}.${self:custom.domain_name}
     BasePathMapping:
       Type: AWS::ApiGateway::BasePathMapping
+      Condition: CreateProdResources
       Properties:
         DomainName:
           Ref: DomainName
