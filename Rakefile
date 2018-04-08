@@ -20,18 +20,20 @@ Vtasks::TravisCI.new
   task "release:#{level}" => "before:#{level}"
 end
 
+# Encrypt dotenv
+desc 'Encrypts .env'
+task :env do
+  print 'Encrypting .env... '
+  system 'echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
+  puts 'Done'
+end
+
 # Display version
 desc 'Display version'
 task :version do
   require 'vtasks/version'
   include Vtasks::Utils::Semver
   puts "Current version: #{gitver}"
-end
-
-# Encrypt dotenv
-desc 'Encrypts .env'
-task :env do
-  sh 'echo "$TRAVIS_KEY_STACK" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
 end
 
 # Create a list of contributors from GitHub
