@@ -32,11 +32,13 @@ provider:
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
-    - Effect: Allow
+    - Sid: AllowAccessToS3Bucket
+      Effect: Allow
       Action:
         - s3:GetObject
       Resource: arn:aws:s3:::${self:custom.secrets_bucket}/*
-    - Effect: Allow
+    - Sid: AllowAccessToOwnSSMParameters
+      Effect: Allow
       Action:
         - ssm:Get*
       Resource: arn:aws:ssm:*:*:parameter/${self:custom.service}/*
@@ -70,9 +72,30 @@ functions:
     handler: handler.run
     events:
       - schedule: rate(15 minutes)
+  cloudwatch:
+    handler: handler.cloudwatch
+    events:
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ssm"
+            detail-type:
+              - "Parameter Store Change"
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ec2"
+            detail-type:
+              - "EC2 Instance State-change Notification"
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.signin"
+            detail-type:
+              - "AWS Console Sign In via CloudTrail"
 
 resources:
-  Conditions: 
+  Conditions:
     CreateProdResources:
       Fn::Equals:
         - ${self:custom.stage}

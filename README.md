@@ -12,7 +12,8 @@ Initially a NodeJS app based on https://github.com/johnagan/serverless-slack-app
 Refactored later in Python on AWS Lambda with AWS API Gateway based on https://medium.com/devoops-and-universe/serverless-slack-bot-on-aws-vs-azure-getting-notified-instantly-ab0916393e1d for some of the Slack code and https://gist.github.com/andrewgross/8ba32af80ecccb894b82774782e7dcd4 for the Travis webhook
 
 ## Requirements
-- `/vbot/SlackVerificationToken` SSM parameter (secure string) needs to be accessible (used for slack channel posting)
+- `/vbot/SlackVerificationToken` SSM parameter (secure string) needs to be accessible (used to verify slack requests)
+- `/vbot/SlackHookURL` SSM parameter (secure string) needs to be accessible (used for slack channel posting)
 - the S3 secrets bucket containing `deploy.rsa` (used for ssh connection)
 
 ## Commands

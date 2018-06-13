@@ -102,6 +102,18 @@ def travis(event, context):
     return process_travis(event)
 
 
+def cloudwatch(event, context):
+    """
+    CloudWatch Endpoint
+    """
+
+    # Skip scheduled events (they are just warming up the fucntion)
+    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
+        return
+
+    return process_cloudwatch(event)
+
+
 def process_slack(params):
     """
     Slack Requests Processor
@@ -163,21 +175,6 @@ def process_slack(params):
     return {'text': 'Event ignored :cry:'}
 
 
-def post_to_slack(hook_url, slack_message):
-    """
-    Ex: post_to_slack(response_url, {'text': 'Unknown command :cry:'})
-    """
-    req = Request(hook_url, json.dumps(slack_message).encode('utf-8'))
-    try:
-        response = urlopen(req)
-        response.read()
-        logger.info('Response posted')
-    except HTTPError as e:
-        logger.error("Request failed: %d %s", e.code, e.reason)
-    except URLError as e:
-        logger.error("Server connection failed: %s", e.reason)
-
-
 def process_travis(request):
     """
     Process TravisCI Requests
@@ -215,6 +212,73 @@ def process_travis(request):
         logger.warn('Event ignored')
 
     return respond(None, {'status': 'OK'})
+
+
+def process_cloudwatch(event):
+    """
+    Process TravisCI Requests
+    Thanks to https://serverless.com/blog/serverless-cloudtrail-cloudwatch-events/
+    Full list of CloudWatch events: https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html
+    """
+    if event.get('source') == 'aws.ssm':
+        event_type = event.get('detail-type')
+        name = event.get('detail').get('name')
+        operation = event.get('detail').get('operation')
+        post_to_slack({
+                        'text': event_type,
+                        "icon_emoji": ":rotating_light:",
+                        'attachments': [
+                            {
+                                'text': 'A *%s* operation was performed on parameter *%s*' % (operation, name),
+                                "color": "#ff0000"
+                            }
+                        ]
+                    })
+    elif event.get('source') == 'aws.ec2':
+        event_type = event.get('detail-type')
+        instance = event.get('detail').get('instance-id')
+        state = event.get('detail').get('state')
+        post_to_slack({
+                        'text': event_type,
+                        "icon_emoji": ":rotating_light:",
+                        'attachments': [
+                            {
+                                'text': 'Instance *%s* has changed state to *%s*' % (instance, state),
+                                "color": "#ff0000"
+                            }
+                        ]
+                    })
+    elif event.get('source') == 'aws.signin':
+        event_type = event.get('detail-type')
+        sourceIPAddress = event.get('detail').get('sourceIPAddress')
+        post_to_slack({
+                        'text': event_type,
+                        "icon_emoji": ":rotating_light:",
+                        'attachments': [
+                            {
+                                'text': 'Detected from IP address *%s*' % (sourceIPAddress),
+                                "color": "#ff0000"
+                            }
+                        ]
+                    })
+    else:
+        logger.warn('Event ignored')
+
+
+def post_to_slack(message):
+    """
+    Ex: post_to_slack({'text': 'Unknown command :cry:'})
+    """
+    hook_url = get_secret('/vbot/SlackHookURL')
+    request = Request(hook_url, json.dumps(message).encode('utf-8'))
+    try:
+        response = urlopen(request)
+        response.read()
+        logger.info('Response posted')
+    except HTTPError as e:
+        logger.error("Request failed: %d %s", e.code, e.reason)
+    except URLError as e:
+        logger.error("Server connection failed: %s", e.reason)
 
 
 def check_travis_authorized(signature, public_key, payload):
