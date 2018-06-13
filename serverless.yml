@@ -6,7 +6,7 @@ custom:
   # Stage
   stage: ${opt:stage, env:SLS_STAGE, 'dev'}
   # Secrets Bucket Name
-  secrets_bucket: ${env:VBOT_SECRETS_BUCKET}
+  secrets_bucket: ${ssm:/vbot/SecretsBucket}
   # Domain Name
   domain_name: ghn.me
   # serverless-python-requirements plugin (package dependencies)
