@@ -6,7 +6,7 @@ custom:
   # Stage
   stage: ${opt:stage, env:SLS_STAGE, 'dev'}
   # Secrets Bucket Name
-  secrets_bucket: ${ssm:/vbot/SecretsBucket}
+  secrets_bucket: ${ssm:/vbot/SecretsBucket~true}
   # Domain Name
   domain_name: ghn.me
   # serverless-python-requirements plugin (package dependencies)
@@ -44,7 +44,6 @@ provider:
       Resource: arn:aws:ssm:*:*:parameter/${self:custom.service}/*
   environment:
     SERVICE_NAME: ${self:custom.service}
-    SECRETS_BUCKET: ${self:custom.secrets_bucket}
 
 functions:
   slack:

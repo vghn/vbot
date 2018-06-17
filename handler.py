@@ -38,6 +38,7 @@ TRAVIS_CONFIG_URL = 'https://api.travis-ci.org/config'
 def get_secret(key):
     """
     Retrieve AWS SSM Parameter (decrypted if necessary)
+    Ex: get_secret('/path/to/service/myParam')
     """
     response = ssm.get_parameter(Name=key, WithDecryption=True)
     return response['Parameter']['Value']
@@ -318,7 +319,7 @@ def deploy_r10k():
 
     # Download private key file from secure S3 bucket
     s3.download_file(
-        os.environ['SECRETS_BUCKET'],
+        get_secret('/vbot/SecretsBucket'),
         'deploy.rsa',
         '/tmp/deploy.rsa'
     )
