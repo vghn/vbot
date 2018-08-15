@@ -18,6 +18,7 @@ before_install:
   -o Dpkg::Options::="--force-confold" install docker-ce
 - docker --version
 install:
+- pip install --user --upgrade awscli && aws --version
 - npm install serverless -g
 - npm install serverless-python-requirements
 script: bin/vbot deploy
