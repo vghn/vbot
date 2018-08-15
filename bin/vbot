@@ -34,8 +34,6 @@ load_env(){
     # shellcheck disable=1090
     . "${APPDIR}/.env" 2>/dev/null || true
   elif [[ -s "${APPDIR}/.env.gpg" ]]; then
-    gpg --version
-    gpg2 --version
     # shellcheck disable=1090
     . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
   fi
