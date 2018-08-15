@@ -37,7 +37,7 @@ load_env(){
     gpg --version
     gpg2 --version
     # shellcheck disable=1090
-    . <( gpg2 --batch --yes --pinentry-mode loopback --passphrase "$( echo "$ENCRYPT_KEY" | base64 --decode --ignore-garbage )" --decrypt "${APPDIR}/.env.gpg" ) 2>/dev/null || true
+    . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
   fi
 }
 
