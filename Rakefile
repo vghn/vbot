@@ -24,7 +24,7 @@ end
 desc 'Encrypts .env'
 task :env do
   print 'Encrypting .env... '
-  system 'echo "$ENCRYPT_PASSPHRASE" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
+  system 'gpg --batch --yes --pinentry-mode loopback --passphrase "$( echo "$ENCRYPT_KEY" | base64 --decode --ignore-garbage )" --cipher-algo AES256 --s2k-digest-algo SHA512 --symmetric --output .env.gpg .env'
   puts 'Done'
 end
 
