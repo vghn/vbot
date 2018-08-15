@@ -34,8 +34,10 @@ load_env(){
     # shellcheck disable=1090
     . "${APPDIR}/.env" 2>/dev/null || true
   elif [[ -s "${APPDIR}/.env.gpg" ]]; then
+    gpg --version
+    gpg2 --version
     # shellcheck disable=1090
-    . <( gpg --batch --yes --pinentry-mode loopback --passphrase "$( echo "$ENCRYPT_KEY" | base64 --decode --ignore-garbage )" --decrypt "${APPDIR}/.env.gpg" ) 2>/dev/null || true
+    . <( gpg2 --batch --yes --pinentry-mode loopback --passphrase "$( echo "$ENCRYPT_KEY" | base64 --decode --ignore-garbage )" --decrypt "${APPDIR}/.env.gpg" ) 2>/dev/null || true
   fi
 }
 
@@ -59,10 +61,10 @@ aws_credentials(){
 
   # Read temporary credentials
   read -r -a AWS_STS <<< "$( \
-    AWS_ACCESS_KEY_ID="${AWS_VBOT_ACCESS_KEY_ID}" \
-    AWS_SECRET_ACCESS_KEY="${AWS_VBOT_SECRET_ACCESS_KEY}" \
+    AWS_ACCESS_KEY_ID="${AWS_VBOT_ACCESS_KEY_ID:-}" \
+    AWS_SECRET_ACCESS_KEY="${AWS_VBOT_SECRET_ACCESS_KEY:-}" \
     aws sts assume-role --output text \
-    --role-arn "${AWS_VBOT_ROLE_ARN}" \
+    --role-arn "${AWS_VBOT_ROLE_ARN:-}" \
     --role-session-name "$(hostname)_$(date +%Y%m%d)" \
     --duration-seconds 900 \
     --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
