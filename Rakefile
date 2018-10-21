@@ -1,18 +1,30 @@
 # Configure the load path so all dependencies in your Gemfile can be required
 require 'bundler/setup'
 
-# Include task modules
-require 'vtasks/release'
-Vtasks::Release.new(
-  write_changelog: true,
-  bug_labels: 'Type: Bug',
-  enhancement_labels: 'Type: Enhancement'
-)
+# Create a list of contributors from GitHub
+desc 'Generate a Change log from GitHub'
+task release: ['release:changes']
+
+namespace :release do
+  require 'github_changelog_generator'
+
+  desc 'Generate a Change log from GitHub'
+  task :changes do
+    system "BUG_LABELS='Type: Bug' ENHANCEMENT_LABELS='Type: Enhancement' ~/vgs/scripts/release.sh unreleased"
+  end
+
+  ['patch', 'minor', 'major'].each do |level|
+    desc "Release #{level} version"
+    task level.to_sym do
+      system "WRITE_CHANGELOG=true BUG_LABELS='Type: Bug' ENHANCEMENT_LABELS='Type: Enhancement' ~/vgs/scripts/release.sh #{level}"
+    end
+  end
+end
 
 # Update NPM version before release
 ['major', 'minor', 'patch'].each do |level|
   task "before:#{level}".to_sym do
-    sh "npm version #{level} --no-git-tag-version"
+    system "npm version #{level} --no-git-tag-version"
   end
   task "release:#{level}" => "before:#{level}"
 end
@@ -20,15 +32,13 @@ end
 # Display version
 desc 'Display version'
 task :version do
-  require 'vtasks/version'
-  include Vtasks::Utils::Semver
-  puts "Current version: #{gitver}"
+  system "git describe --always --tags 2>/dev/null || echo '0.0.0-0-0'"
 end
 
 # Create a list of contributors from GitHub
 desc 'Populate CONTRIBUTORS file'
 task :contributors do
-  system("git log --format='%aN' | sort -u > CONTRIBUTORS")
+  system "git log --format='%aN' | sort -u > CONTRIBUTORS"
 end
 
 # List all tasks by default

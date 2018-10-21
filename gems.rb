@@ -1,7 +1,5 @@
 source ENV['GEM_SOURCE'] || 'https://rubygems.org'
 
-gem 'vtasks', require: false
-
 gem 'rake', require: false
 gem 'dotenv', require: false
 
