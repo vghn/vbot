@@ -5,7 +5,6 @@ require 'bundler/setup'
 require 'vtasks/release'
 Vtasks::Release.new(
   write_changelog: true,
-  wait_for_ci_success: true,
   bug_labels: 'Type: Bug',
   enhancement_labels: 'Type: Enhancement'
 )
@@ -18,14 +17,6 @@ Vtasks::TravisCI.new
     sh "npm version #{level} --no-git-tag-version"
   end
   task "release:#{level}" => "before:#{level}"
-end
-
-# Encrypt dotenv
-desc 'Encrypts .env'
-task :env do
-  print 'Encrypting .env... '
-  system 'echo "$ENCRYPT_PASSPHRASE" | gpg --symmetric --passphrase-fd 0 --batch --yes --cipher-algo AES256 --s2k-digest-algo SHA512 --output .env.gpg .env'
-  puts 'Done'
 end
 
 # Display version
