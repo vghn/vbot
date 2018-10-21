@@ -1,10 +1,18 @@
 # Change Log
 
+## [v0.1.3](https://github.com/vghn/vbot/tree/v0.1.3) (2018-10-21)
+[Full Changelog](https://github.com/vghn/vbot/compare/v0.1.2...v0.1.3)
+
+**Implemented enhancements:**
+
+- Remove VTasks gem dependency [\#29](https://github.com/vghn/vbot/issues/29)
+
 ## [v0.1.2](https://github.com/vghn/vbot/tree/v0.1.2) (2018-10-21)
 [Full Changelog](https://github.com/vghn/vbot/compare/v0.1.1...v0.1.2)
 
 **Implemented enhancements:**
 
+- Use VGS scripts [\#28](https://github.com/vghn/vbot/issues/28)
 - Use temporary IAM credentials [\#27](https://github.com/vghn/vbot/issues/27)
 - Improve env encryption [\#26](https://github.com/vghn/vbot/issues/26)
 - Notify Slack on security concerning events [\#24](https://github.com/vghn/vbot/issues/24)
