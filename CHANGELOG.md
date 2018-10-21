@@ -1,6 +1,27 @@
 # Change Log
 
-## [v0.1.1](https://github.com/vghn/vbot/tree/v0.1.1) (2018-01-25)
+## [v0.1.2](https://github.com/vghn/vbot/tree/v0.1.2) (2018-10-21)
+[Full Changelog](https://github.com/vghn/vbot/compare/v0.1.1...v0.1.2)
+
+**Implemented enhancements:**
+
+- Use temporary IAM credentials [\#27](https://github.com/vghn/vbot/issues/27)
+- Improve env encryption [\#26](https://github.com/vghn/vbot/issues/26)
+- Notify Slack on security concerning events [\#24](https://github.com/vghn/vbot/issues/24)
+- Create custom domain name only for the production stage [\#23](https://github.com/vghn/vbot/issues/23)
+- Separate the secrets bucket from the serverless template [\#22](https://github.com/vghn/vbot/issues/22)
+- Add cli help [\#20](https://github.com/vghn/vbot/issues/20)
+- Add server encryption to the secrets bucket [\#19](https://github.com/vghn/vbot/issues/19)
+- Document functions [\#18](https://github.com/vghn/vbot/issues/18)
+- Add prune plugin [\#17](https://github.com/vghn/vbot/issues/17)
+- Improve stages and dependencies [\#16](https://github.com/vghn/vbot/issues/16)
+
+**Fixed bugs:**
+
+- The Secrets bucket name is not decrypted [\#25](https://github.com/vghn/vbot/issues/25)
+- Only deploy R10K if build passed [\#21](https://github.com/vghn/vbot/issues/21)
+
+## [v0.1.1](https://github.com/vghn/vbot/tree/v0.1.1) (2018-01-26)
 [Full Changelog](https://github.com/vghn/vbot/compare/v0.1.0...v0.1.1)
 
 **Implemented enhancements:**
