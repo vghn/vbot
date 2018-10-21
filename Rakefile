@@ -8,8 +8,6 @@ Vtasks::Release.new(
   bug_labels: 'Type: Bug',
   enhancement_labels: 'Type: Enhancement'
 )
-require 'vtasks/travisci'
-Vtasks::TravisCI.new
 
 # Update NPM version before release
 ['major', 'minor', 'patch'].each do |level|
