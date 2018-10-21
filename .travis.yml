@@ -18,6 +18,7 @@ before_install:
   -o Dpkg::Options::="--force-confold" install docker-ce
 - docker --version
 install:
+- git clone https://github.com/vghn/vgs.git ~/vgs
 - pip install --user --upgrade awscli && aws --version
 - npm install serverless -g
 - npm install serverless-python-requirements

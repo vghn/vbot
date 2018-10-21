@@ -8,6 +8,10 @@ IFS=$'\n\t'
 [ -z "${DEBUG:-}" ] || set -x
 
 # VARs
+VBOT_AWS_ACCESS_KEY_ID="${VBOT_AWS_ACCESS_KEY_ID:-}"
+VBOT_AWS_SECRET_ACCESS_KEY="${VBOT_AWS_SECRET_ACCESS_KEY:-}"
+VBOT_AWS_ROLE_ARN="${VBOT_AWS_ROLE_ARN:-}"
+ENCRYPT_KEY="${ENCRYPT_KEY:-}"
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/.."
 GIT_BRANCH="${TRAVIS_BRANCH:-$(git symbolic-ref --short HEAD)}"
 
@@ -28,16 +32,9 @@ usage(){
   exit 1
 }
 
-# Load private environment
-load_env(){
-  if [[ -s "${APPDIR}/.env" ]]; then
-    # shellcheck disable=1090
-    . "${APPDIR}/.env" 2>/dev/null || true
-  elif [[ -s "${APPDIR}/.env.gpg" ]]; then
-    # shellcheck disable=1090
-    . <( ( echo "$ENCRYPT_KEY" | base64 --decode ) |  gpg --batch --yes --decrypt --passphrase-fd 0 "${APPDIR}/.env.gpg" ) 2>/dev/null || true
-  fi
-}
+# Load VGS library (https://github.com/vghn/vgs)
+# shellcheck disable=1090
+. "${VGS_PATH:-${HOME}/vgs}/load" || { echo 'VGS library is required' >&2; exit 1; }
 
 # Detect stage
 detect_stage(){
@@ -50,30 +47,6 @@ detect_stage(){
   fi
 }
 
-# Configure AWS
-aws_credentials(){
-  echo 'Get temporary credentials for AWS'
-
-  # Clear out existing AWS session environment, or the awscli call will fail
-  unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_PROFILE
-
-  # Read temporary credentials
-  read -r -a AWS_STS <<< "$( \
-    AWS_ACCESS_KEY_ID="${AWS_VBOT_ACCESS_KEY_ID:-}" \
-    AWS_SECRET_ACCESS_KEY="${AWS_VBOT_SECRET_ACCESS_KEY:-}" \
-    aws sts assume-role --output text \
-    --role-arn "${AWS_VBOT_ROLE_ARN:-}" \
-    --role-session-name "$(hostname)_$(date +%Y%m%d)" \
-    --duration-seconds 900 \
-    --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-    )"
-
-  # Export temporary credentials
-  export AWS_ACCESS_KEY_ID="${AWS_STS[0]}"
-  export AWS_SECRET_ACCESS_KEY="${AWS_STS[1]}"
-  export AWS_SESSION_TOKEN="${AWS_STS[2]}"
-}
-
 # Deploy
 deploy_vbot(){
   local func="${1:-}"
@@ -81,8 +54,11 @@ deploy_vbot(){
     echo "Not deploying changes from ${GIT_BRANCH} (only master/dev)"
   else
     echo "Deploying stage from branch '${GIT_BRANCH}' to '${SLS_STAGE}'"
+
     npm install
-    aws_credentials
+
+    vgs_aws_credentials "$VBOT_AWS_ACCESS_KEY_ID" "$VBOT_AWS_SECRET_ACCESS_KEY" "$VBOT_AWS_ROLE_ARN"
+
     if [[ -n "$func" ]]; then
       serverless deploy function --stage "$SLS_STAGE" --function "$func" --verbose
     else
