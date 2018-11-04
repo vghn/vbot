@@ -184,6 +184,7 @@ def process_travis(request):
     signature = get_travis_signature(request)
     json_payload = parse_qs(request['body'])['payload'][0]
     logger.info(request)
+    logger.info(json_payload)
 
     try:
         public_key = get_travis_public_key()
