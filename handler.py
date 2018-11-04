@@ -28,12 +28,6 @@ logger.setLevel(logging.INFO)
 s3 = boto3.client('s3')
 ssm = boto3.client('ssm')
 
-# Make sure you use the correct config URL, the .org and .com
-# have different keys!
-# https://api.travis-ci.org/config
-# https://api.travis-ci.com/config
-TRAVIS_CONFIG_URL = 'https://api.travis-ci.com/config'
-
 
 def get_secret(key):
     """
@@ -183,11 +177,9 @@ def process_travis(request):
     """
     signature = get_travis_signature(request)
     json_payload = parse_qs(request['body'])['payload'][0]
-    logger.info(request)
-    logger.info(json_payload)
 
     try:
-        public_key = get_travis_public_key()
+        public_key = get_travis_public_key(json_payload['build_url'])
     except requests.Timeout:
         logger.error({'message': 'Timed out when attempting to retrieve Travis CI public key'})
         return respond(Exception('Timed out when attempting to retrieve Travis CI public key'))
@@ -303,11 +295,21 @@ def get_travis_signature(request):
     return base64.b64decode(signature)
 
 
-def get_travis_public_key():
+def get_travis_public_key(build_url):
     """
     Returns the PEM encoded public key from the Travis CI /config endpoint
     """
-    response = requests.get(TRAVIS_CONFIG_URL, timeout=5)
+
+    # Make sure you use the correct config URL, the .org and .com
+    # have different keys!
+    if build_url.startswith('https://travis-ci.com'):
+        travis_config_url = 'https://api.travis-ci.com/config'
+    elif build_url.startswith('https://travis-ci.org'):
+        travis_config_url = 'https://api.travis-ci.org/config'
+    else:
+        logger.warn('The build url is unknown')
+
+    response = requests.get(travis_config_url, timeout=5)
     response.raise_for_status()
     return response.json()['config']['notifications']['webhook']['public_key']
 
