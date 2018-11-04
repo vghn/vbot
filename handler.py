@@ -177,9 +177,17 @@ def process_travis(request):
     """
     signature = get_travis_signature(request)
     json_payload = parse_qs(request['body'])['payload'][0]
+    json_data = json.loads(json_payload)
+
+    build_number = json_data['number']
+    build_url = json_data['build_url']
+    state = json_data['state']
+    branch = json_data['branch']
+    repo_name = json_data['repository']['name']
+    owner_name = json_data['repository']['owner_name']
 
     try:
-        public_key = get_travis_public_key(json_payload['build_url'])
+        public_key = get_travis_public_key(build_url)
     except requests.Timeout:
         logger.error({'message': 'Timed out when attempting to retrieve Travis CI public key'})
         return respond(Exception('Timed out when attempting to retrieve Travis CI public key'))
@@ -190,14 +198,6 @@ def process_travis(request):
         check_travis_authorized(signature, public_key, json_payload)
     except SignatureError:
         return respond(Exception('Unauthorized'))
-
-    json_data = json.loads(json_payload)
-
-    build_number = json_data['number']
-    state = json_data['state']
-    branch = json_data['branch']
-    repo_name = json_data['repository']['name']
-    owner_name = json_data['repository']['owner_name']
 
     logger.info('Authorized request received from TravisCI build #%s for the %s branch of repository %s/%s', build_number, branch, owner_name, repo_name)
 
