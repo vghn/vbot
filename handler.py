@@ -32,7 +32,7 @@ ssm = boto3.client('ssm')
 # have different keys!
 # https://api.travis-ci.org/config
 # https://api.travis-ci.com/config
-TRAVIS_CONFIG_URL = 'https://api.travis-ci.org/config'
+TRAVIS_CONFIG_URL = 'https://api.travis-ci.com/config'
 
 
 def get_secret(key):
