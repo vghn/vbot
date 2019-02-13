@@ -1,29 +1,27 @@
 dist: xenial
 language: node_js
 services: docker
-node_js:
-- '6'
-branches:
-  except:
-  - "/^v\\d/"
 env:
   global:
-  - SLS_DEBUG=true
+    SLS_DEBUG: 'true'
 cache:
   directories:
   - node_modules
 before_install:
 - sudo apt-get -qy update && sudo apt-get -qy -o Dpkg::Options::="--force-confdef"
-  -o Dpkg::Options::="--force-confold" install docker-ce
-- docker --version
+  -o Dpkg::Options::="--force-confold" install docker-ce && docker --version
 install:
-- git clone https://github.com/vghn/vgs.git ~/vgs
-- pip install --user --upgrade awscli && aws --version
 - npm install serverless -g
 - npm install serverless-python-requirements
-script: bin/vbot deploy
+before_script: |
+  if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
+    echo 'Decrypting AWS Credentials'
+    gpg --decrypt --passphrase "$(echo "$ENCRYPT_KEY" | base64 --decode)" --batch --yes --output .aws .aws.gpg
+    chmod 400 .aws
+  fi
+script: ./vbot deploy
 notifications:
   webhooks:
-    urls: https://vbot.ghn.me/travis
+    urls: https://qf0d5qh12f.execute-api.us-east-1.amazonaws.com/prod/travis
   slack:
     secure: TmrB8nVGagUOkHIpHlX0u4AiM1lfvvDBeB9mX//jVvoW+ex42UPeaeiqzLbMlbNzeK+iH/LB+9hMucKeF0MHCjx4FGqxw7rWtOHR/vKJsKX6DnIRHoI/hyNcsmAE4jMEtNBcYXEWrKS1hNx40uDhSGCXWvv7DYriIHt9jzgskEagGoUKRNH/hohQ0X3fbhgOIr6IACJgRHZ5ZiByBQH8+zAY+lLj/mahrMhHP4ZvLTMxtpv9SUYfErkSIu6jwLuCNxv5ynxEWkpu0vpds87f2h8NfFdLMdlO4CJmEGLyrkEhNRjg8dYQYVbbd1Ib0K8CwJN1TZhvXsh6H6geyk7DJttAnUoFQTCofJ8wrRThxmEJrJcYbaQ/9owakxsPcWlFK/6CO77yFLq5KCSeFz74DFvUXTNSl3LrTGTLQeXvC7iVVgjHWwUFWBk2E0nXYkSjPb+83fLCYX+HglcZhY2WZrnBZvxOlkFlYL4fmJ6NTpzTmmvPNlQAGniRAtP4apUg/PjcTOFhaAlfGXDJlhsxFdV8UnedFtNXRK6OKALPh0ys+MYa3pf/0gIXJ5m2A0xhWnKZFdLgrYL3OP3Isy42vjCnzeJWi/O7LPRDG4vt48q73fnJriYplL5+uV9CsxACgN3kkkapgvEw0gb+Dlb2Rjbgkaj2uYkKRRvGliINCzI=

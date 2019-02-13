@@ -1,5 +1,3 @@
-import os
-import datetime
 import base64
 import logging
 import json
@@ -16,7 +14,6 @@ except ImportError:
     pass
 
 # Import requirements not present on AWS Lambda
-import paramiko
 from OpenSSL.crypto import verify, load_publickey, FILETYPE_PEM, X509
 from OpenSSL.crypto import Error as SignatureError
 
@@ -51,28 +48,6 @@ def respond(err, res=None):
     }
 
 
-def run(event, context):
-    """
-    VBot Cron Jobs
-    """
-
-    current_time = datetime.datetime.now().time()
-    name = context.function_name
-    logger.info('Your function %s ran at %s', name, str(current_time))
-
-
-def api(event, context):
-    """
-    VBot API
-    """
-
-    # Skip scheduled events (they are just warming up the fucntion)
-    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
-        return
-
-    return respond(None, {'status': 'OK'})
-
-
 def slack(event, context):
     """
     Slack Endpoint Processor
@@ -95,18 +70,6 @@ def travis(event, context):
         return
 
     return process_travis(event)
-
-
-def cloudwatch(event, context):
-    """
-    CloudWatch Endpoint
-    """
-
-    # Skip scheduled events (they are just warming up the fucntion)
-    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
-        return
-
-    return process_cloudwatch(event)
 
 
 def process_slack(params):
@@ -144,8 +107,8 @@ def process_slack(params):
         if command_text == 'deploy r10k':
             # Only allow Vlad (U0474LR06)
             verify_allowed('U0474LR06')
-            deploy_r10k()
-            return {'text': 'R10K deploying in the background :thumbsup:'}
+
+            return {'text': 'No longer implemented :thumbsdown:'}
         elif command_text == 'help':
             return {
                 'text': '*USAGE*',
@@ -156,7 +119,7 @@ def process_slack(params):
                     },
                     {
                         'title': 'deploy r10k',
-                        'text': 'Deploys Puppet Master changes via SSH'
+                        'text': 'Deploys Puppet Master changes via SSH (No longer implemented)'
                     }
                 ]
             }
@@ -202,74 +165,23 @@ def process_travis(request):
     logger.info('Authorized request received from TravisCI build #%s for the %s branch of repository %s/%s', build_number, branch, owner_name, repo_name)
 
     if owner_name == 'vghn' and repo_name == 'puppet' and state == 'passed':
-        deploy_r10k()
+        logger.warn('No longer implemented')
     else:
         logger.warn('Event ignored')
 
     return respond(None, {'status': 'OK'})
 
 
-def process_cloudwatch(event):
-    """
-    Process TravisCI Requests
-    Thanks to https://serverless.com/blog/serverless-cloudtrail-cloudwatch-events/
-    Full list of CloudWatch events: https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html
-    """
-    if event.get('source') == 'aws.ssm':
-        event_type = event.get('detail-type')
-        name = event.get('detail').get('name')
-        operation = event.get('detail').get('operation')
-        post_to_slack({
-                        'text': event_type,
-                        "icon_emoji": ":rotating_light:",
-                        'attachments': [
-                            {
-                                'text': 'A *%s* operation was performed on parameter *%s*' % (operation, name),
-                                "color": "#ff0000"
-                            }
-                        ]
-                    })
-    elif event.get('source') == 'aws.ec2':
-        event_type = event.get('detail-type')
-        instance = event.get('detail').get('instance-id')
-        state = event.get('detail').get('state')
-        post_to_slack({
-                        'text': event_type,
-                        "icon_emoji": ":rotating_light:",
-                        'attachments': [
-                            {
-                                'text': 'Instance *%s* has changed state to *%s*' % (instance, state),
-                                "color": "#ff0000"
-                            }
-                        ]
-                    })
-    elif event.get('source') == 'aws.signin':
-        event_type = event.get('detail-type')
-        sourceIPAddress = event.get('detail').get('sourceIPAddress')
-        post_to_slack({
-                        'text': event_type,
-                        "icon_emoji": ":rotating_light:",
-                        'attachments': [
-                            {
-                                'text': 'Detected from IP address *%s*' % (sourceIPAddress),
-                                "color": "#ff0000"
-                            }
-                        ]
-                    })
-    else:
-        logger.warn('Event ignored')
-
-
 def post_to_slack(message):
     """
     Ex: post_to_slack({'text': 'Unknown command :cry:'})
     """
-    hook_url = get_secret('/vbot/SlackHookURL')
+    hook_url = get_secret('SlackAlertsHookURL')
     request = Request(hook_url, json.dumps(message).encode('utf-8'))
     try:
         response = urlopen(request)
         response.read()
-        logger.info('Response posted')
+        logger.info('Response posted to Slack channel')
     except HTTPError as e:
         logger.error("Request failed: %d %s", e.code, e.reason)
     except URLError as e:
@@ -312,34 +224,3 @@ def get_travis_public_key(build_url):
     response = requests.get(travis_config_url, timeout=5)
     response.raise_for_status()
     return response.json()['config']['notifications']['webhook']['public_key']
-
-
-def deploy_r10k():
-    """
-    Run remote r10k deploy command
-    """
-    host = 'rhea.ghn.me'
-    user = 'ubuntu'
-
-    # Download private key file from secure S3 bucket
-    s3.download_file(
-        get_secret('/vbot/SecretsBucket'),
-        'deploy.rsa',
-        '/tmp/deploy.rsa'
-    )
-
-    # Establish SSH connection
-    key = paramiko.RSAKey.from_private_key_file('/tmp/deploy.rsa')
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    logger.info('Connect to ' + host)
-    ssh.connect(host, username=user, pkey=key)
-
-    # Run SSH commands
-    ssh_commands = [
-        'docker exec $(docker ps --quiet --latest --filter "label=r10k") r10k deploy environment --puppetfile'
-    ]
-    for ssh_command in ssh_commands:
-        logger.info("Execute '{}' in the background".format(ssh_command + ' >/dev/null 2>&1 &'))
-        stdin, stdout, stderr = ssh.exec_command(ssh_command)
-    ssh.close()

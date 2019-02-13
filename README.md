@@ -16,10 +16,10 @@ Refactored later in Python on AWS Lambda with AWS API Gateway based on <https://
 
 ## Requirements
 
-- AWS credentials present in `.env` (for a separate user with "AdministratorAccess" policy)
-- `/vbot/SlackVerificationToken` SSM parameter (secure string); used to verify slack requests
-- `/vbot/SlackHookURL` SSM parameter (secure string); used for slack channel posting
-- `/vbot/SecretsBucket` SSM parameter (secure string); the name of the bucket containing secrets
+- AWS credentials present in `.aws` (for a user with "AdministratorAccess" policy)
+- SSM Parameters:
+  - `/vbot/SlackVerificationToken` (secure string), used to verify slack requests
+  - `/vbot/SlackAlertsHookURL` (secure string), used for slack posting in #alerts
 
 ## Commands
 

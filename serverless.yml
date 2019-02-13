@@ -5,10 +5,6 @@ custom:
   service: ${self:service}
   # Stage
   stage: ${opt:stage, env:SLS_STAGE, 'dev'}
-  # Secrets Bucket Name
-  secrets_bucket: ${ssm:/vbot/SecretsBucket~true}
-  # Domain Name
-  domain_name: ghn.me
   # serverless-python-requirements plugin (package dependencies)
   pythonRequirements:
     dockerizePip: true
@@ -27,16 +23,11 @@ package:
 
 provider:
   name: aws
-  runtime: python3.6
+  runtime: python3.7
   memorySize: 128
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
-    - Sid: AllowAccessToS3Bucket
-      Effect: Allow
-      Action:
-        - s3:GetObject
-      Resource: arn:aws:s3:::${self:custom.secrets_bucket}/*
     - Sid: AllowAccessToOwnSSMParameters
       Effect: Allow
       Action:
@@ -60,73 +51,6 @@ functions:
       - http:
           path: travis
           method: post
-  api:
-    handler: handler.api
-    events:
-      - schedule: rate(15 minutes)
-      - http:
-          path: api
-          method: get
-  cron:
-    handler: handler.run
-    events:
-      - schedule: rate(15 minutes)
-  cloudwatch:
-    handler: handler.cloudwatch
-    events:
-      - cloudwatchEvent:
-          event:
-            source:
-              - "aws.ssm"
-            detail-type:
-              - "Parameter Store Change"
-      - cloudwatchEvent:
-          event:
-            source:
-              - "aws.ec2"
-            detail-type:
-              - "EC2 Instance State-change Notification"
-      - cloudwatchEvent:
-          event:
-            source:
-              - "aws.signin"
-            detail-type:
-              - "AWS Console Sign In via CloudTrail"
-
-resources:
-  Conditions:
-    CreateProdResources:
-      Fn::Equals:
-        - ${self:custom.stage}
-        - prod
-  Resources:
-    Certificate:
-      Type: AWS::CertificateManager::Certificate
-      Condition: CreateProdResources
-      Properties:
-        DomainName: ${self:custom.service}.${self:custom.domain_name}
-        DomainValidationOptions:
-          - DomainName: ${self:custom.service}.${self:custom.domain_name}
-            ValidationDomain: ${self:custom.domain_name}
-        Tags:
-          - Key: Name
-            Value: ${self:custom.service}
-    DomainName:
-      Type: AWS::ApiGateway::DomainName
-      Condition: CreateProdResources
-      Properties:
-        CertificateArn:
-          Ref: Certificate
-        DomainName: ${self:custom.service}.${self:custom.domain_name}
-    BasePathMapping:
-      Type: AWS::ApiGateway::BasePathMapping
-      Condition: CreateProdResources
-      Properties:
-        DomainName:
-          Ref: DomainName
-        RestApiId:
-          Ref: ApiGatewayRestApi
-        Stage: ${self:custom.stage}
 
 plugins:
   - serverless-python-requirements
