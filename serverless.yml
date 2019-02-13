@@ -4,7 +4,7 @@ custom:
   # Service name
   service: ${self:service}
   # Stage
-  stage: ${opt:stage, env:SLS_STAGE, 'dev'}
+  stage: ${opt:stage, 'dev'}
   # serverless-python-requirements plugin (package dependencies)
   pythonRequirements:
     dockerizePip: true
