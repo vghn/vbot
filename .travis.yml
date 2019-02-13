@@ -22,9 +22,8 @@ before_script: |
   fi
 script: |
   if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
-    export AWS_SHARED_CREDENTIALS_FILE=./.aws
     npm install
-    serverless deploy --stage prod
+    AWS_SDK_LOAD_CONFIG=1 AWS_SHARED_CREDENTIALS_FILE=.aws serverless deploy --aws-profile vbot --stage prod
   fi
 notifications:
   webhooks:
