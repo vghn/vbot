@@ -23,7 +23,7 @@ before_script: |
 script: |
   if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
     npm install
-    AWS_SDK_LOAD_CONFIG=1 AWS_SHARED_CREDENTIALS_FILE=.aws serverless deploy --aws-profile vbot --stage prod
+    AWS_SDK_LOAD_CONFIG=1 AWS_SHARED_CREDENTIALS_FILE=.aws AWS_PROFILE=vbot serverless deploy --stage prod
   fi
 notifications:
   webhooks:
