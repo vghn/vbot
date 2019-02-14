@@ -25,6 +25,7 @@ provider:
   name: aws
   runtime: python3.7
   memorySize: 128
+  profile: vbot
   stackTags:
     PROJECT: VBot
   iamRoleStatements:
