@@ -23,6 +23,7 @@ package:
 
 provider:
   name: aws
+  profile: vbot
   runtime: python3.7
   memorySize: 128
   stackTags:
