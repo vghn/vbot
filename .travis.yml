@@ -17,14 +17,13 @@ install:
 - npm install serverless-python-requirements
 before_script: |
   if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
-    mkdir -p ~/.aws
-    gpg --decrypt --passphrase "$(echo "$ENCRYPT_KEY" | base64 --decode)" --batch --yes --output ~/.aws/credentials .aws.gpg
-    chmod 400 ~/.aws/credentials
+    gpg --decrypt --passphrase "$(echo "$ENCRYPT_KEY" | base64 --decode)" --batch --yes --output .aws .aws.gpg
+    chmod 400 .aws
   fi
 script: |
   if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
     npm install
-    serverless deploy --stage prod
+    AWS_SHARED_CREDENTIALS_FILE=.aws AWS_PROFILE=vbot serverless deploy --stage prod
   fi
 notifications:
   webhooks:
