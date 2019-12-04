@@ -14,7 +14,7 @@ before_install:
   -o Dpkg::Options::="--force-confold" install docker-ce && docker --version
 install:
 - npm install serverless -g
-- npm install serverless-python-requirements
+- npm install serverless-python-requirements serverless-prune-plugin
 before_script: |
   if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_PULL_REQUEST" == false ]]; then
     mkdir ~/.aws
