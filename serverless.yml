@@ -9,6 +9,7 @@ custom:
   pythonRequirements:
     dockerizePip: true
     zip: true
+    slim: true
   # serverless-prune-plugin (prune old deployments)
   prune:
     automatic: true
