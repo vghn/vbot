@@ -1,7 +1,6 @@
 import base64
 import logging
 import json
-import boto3
 from botocore.vendored import requests
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
@@ -14,24 +13,23 @@ except ImportError:
     pass
 
 # Import requirements not present on AWS Lambda
+## pyopenssl
 from OpenSSL.crypto import verify, load_publickey, FILETYPE_PEM, X509
 from OpenSSL.crypto import Error as SignatureError
+## hvac
+import hvac
 
 # logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# AWS
-s3 = boto3.client('s3')
-ssm = boto3.client('ssm')
-
 
 def get_secret(key):
     """
-    Retrieve AWS SSM Parameter (decrypted if necessary)
-    Ex: get_secret('/path/to/service/myParam')
+    Retrieve Vault Secret
+    Ex: get_secret('/path/to/service/mySecret')
     """
-    response = ssm.get_parameter(Name=key, WithDecryption=True)
+    vault.auth_approle('MY_ROLE_ID', 'MY_SECRET_ID')
     return response['Parameter']['Value']
 
 
@@ -58,18 +56,6 @@ def slack(event, context):
         return
 
     return respond(None, process_slack(parse_qs(event['body'])))
-
-
-def travis(event, context):
-    """
-    TravisCI Endpoint
-    """
-
-    # Skip scheduled events (they are just warming up the fucntion)
-    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
-        return
-
-    return process_travis(event)
 
 
 def process_slack(params):
@@ -133,6 +119,34 @@ def process_slack(params):
     return {'text': 'Event ignored :cry:'}
 
 
+def post_to_slack(message):
+    """
+    Ex: post_to_slack({'text': 'Unknown command :cry:'})
+    """
+    hook_url = get_secret('SlackAlertsHookURL')
+    request = Request(hook_url, json.dumps(message).encode('utf-8'))
+    try:
+        response = urlopen(request)
+        response.read()
+        logger.info('Response posted to Slack channel')
+    except HTTPError as e:
+        logger.error("Request failed: %d %s", e.code, e.reason)
+    except URLError as e:
+        logger.error("Server connection failed: %s", e.reason)
+
+
+def travis(event, context):
+    """
+    TravisCI Endpoint
+    """
+
+    # Skip scheduled events (they are just warming up the fucntion)
+    if 'detail-type' in event and event['detail-type'] == 'Scheduled Event':
+        return
+
+    return process_travis(event)
+
+
 def process_travis(request):
     """
     Process TravisCI Requests
@@ -170,22 +184,6 @@ def process_travis(request):
         logger.warn('Event ignored')
 
     return respond(None, {'status': 'OK'})
-
-
-def post_to_slack(message):
-    """
-    Ex: post_to_slack({'text': 'Unknown command :cry:'})
-    """
-    hook_url = get_secret('SlackAlertsHookURL')
-    request = Request(hook_url, json.dumps(message).encode('utf-8'))
-    try:
-        response = urlopen(request)
-        response.read()
-        logger.info('Response posted to Slack channel')
-    except HTTPError as e:
-        logger.error("Request failed: %d %s", e.code, e.reason)
-    except URLError as e:
-        logger.error("Server connection failed: %s", e.reason)
 
 
 def check_travis_authorized(signature, public_key, payload):
